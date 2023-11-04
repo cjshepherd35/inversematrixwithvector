@@ -141,29 +141,37 @@ vector<double> inverse(vector<int>& arr, int rows, int cols) {
 
 vector<vector<int>> matmult(vector<vector<int>> array1, vector<vector<int>> array2, int rows1, int cols1, int rows2, int cols2) 
 {
-    
-    vector<vector<int>> multarray;
-    int sumprod;
     if (cols1 != rows2)
     {
         cout << "the dimensions don't match \n";
-        return;
+        exit(1);
     }
+    //output vector
+    vector<vector<int>> multarray;
+    //inner summation tool, sums all columns at once. 
+    vector<int> sumprod(cols2);
     
     //outmost loop for number of  vectors, middle loop for each value in a vector, and 
     //innermost loop is for  multiplying and summing each value in input matrices.
     for (int j = 0; j < rows1; j++) {
-        for (int i = 0; i < cols2; i++)
+        for (int k = 0; k < cols2; k++)
         {
-            sumprod = 0;
-            for (int ind = 0; ind < cols1; ind++)
-            {
-                sumprod += (array1[j][ind] * array2[ind][j]);
-            }
-            multarray[j][i] = sumprod;
+            sumprod[k] = 0;
         }
+        for (int i = 0; i < cols1; i++)
+        {
+            for (int ind = 0; ind < cols2; ind++)
+            {
+                sumprod[ind] += (array1[j][i] * array2[i][ind]);
+            }
+        }
+        multarray.push_back(sumprod);
         
     }
-    
     return multarray;
 }
+
+// vector<vector<int>> threadMatMult(vector<vector<int>> array1, vector<vector<int>> array2, int rows1, int cols1, int rows2, int cols2) 
+// {
+
+// }

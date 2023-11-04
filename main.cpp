@@ -26,8 +26,6 @@ int main(int argc, const char * argv[]) {
         std::cerr << e << '\n';
         cout << "there was  problem \n";
     }
-    
-    cout << "did we get here? \n";
 
     for (int i = 0; i < result.size(); i++)
     {

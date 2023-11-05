@@ -16,16 +16,17 @@ int main(int argc, const char * argv[]) {
     };
 
     vector<vector<int>> result;
+    
     try
     {
-        result = matmult(mat1, mat2, 2,4,4,2);
-        throw("error");
+        //result = matmult(mat1, mat2, 2,4,4,2);
+        result = threadMatMult(mat1, mat2, 2, 4, 4, 2);
     }
-    catch(const char *e)
+    catch(const std::exception& e)
     {
-        std::cerr << e << '\n';
-        cout << "there was  problem \n";
+        std::cerr << e.what() << '\n';
     }
+    
 
     for (int i = 0; i < result.size(); i++)
     {
@@ -37,8 +38,12 @@ int main(int argc, const char * argv[]) {
         
     }
     
+    return 0;
+}
 
-    // int choice;
+
+
+// int choice;
     // cout << "do  you want an inverse or to multiply?  \n";
     // cout << " choose 0 for inverse or 1 for multiply. \n";
     // cin >> choice;
@@ -56,10 +61,3 @@ int main(int argc, const char * argv[]) {
     //     cout << "you're dumb. That is not an acceptable choice. \n";
 
     // }
-    
-    
-    return 0;
-}
-
-
-

@@ -1,10 +1,13 @@
 #include <iostream>
 #include <vector>
 #include <thread>
+#include <mutex>
+#include <condition_variable>
 
 using namespace std;
 
-
+std::mutex m;
+std::condition_variable cv;
 
 // start of determinant function *****************
 //############################################################
@@ -179,6 +182,8 @@ vector<vector<int>> matmult(vector<vector<int>> array1, vector<vector<int>> arra
 void threadLoop( int arr1row, int cols2, int array1RsubI, 
     vector<int> array2SubI, int i, vector<int>& tsumprod)
 {
+    std::unique_lock<mutex> ul(m);
+    cv.wait(ul,  [i] { return (i%2) ? true : false; });
     for (int ind = 0; ind < cols2; ind++)
     {
         tsumprod[ind] = (array1RsubI * array2SubI[ind]);
@@ -189,6 +194,7 @@ void threadLoop( int arr1row, int cols2, int array1RsubI,
 ////////////
 vector<vector<int>> threadMatMult(vector<vector<int>> array1, vector<vector<int>> array2, int rows1, int cols1, int rows2, int cols2) 
 {
+
 
     if (cols1 != rows2)
     {
@@ -209,28 +215,35 @@ vector<vector<int>> threadMatMult(vector<vector<int>> array1, vector<vector<int>
             {
                 
                 
-                thread t;
-                if (i%2)
+                thread t(threadLoop, arr1row, cols2, array1[arr1row][i], array2[i], i, std::ref(threadsumprod));
+
+                // if (i%2)
+                // {
+                //     t = thread(threadLoop, arr1row, cols2, array1[arr1row][i], array2[i], i, std::ref(threadsumprod));
+                // } 
+                // else
+                // {
+                //     for (int ind = 0; ind < cols2; ind++)
+                //     {
+                //         sumprod[ind] += (array1[arr1row][i] * array2[i][ind]);
+                //     }
+                // }
+                for (int ind = 0; ind < cols2; ind++)
                 {
-                    t = thread(threadLoop, arr1row, cols2, array1[arr1row][i], array2[i], i, std::ref(threadsumprod));
-                } 
-                else
-                {
-                    for (int ind = 0; ind < cols2; ind++)
-                    {
-                        sumprod[ind] += (array1[arr1row][i] * array2[i][ind]);
-                    }
+                    sumprod[ind] += (array1[arr1row][i] * array2[i][ind]);
                 }
-                if (t.joinable())
-                {
-                    t.join();
-                };
+                t.detach();
+                // if (t.joinable())
+                // {
+                //     t.join();
+                // };
                 for (int k = 0; k < cols2; k++)
                 {
                     multarray[arr1row][k] += (sumprod[k] + threadsumprod[k]);
                     threadsumprod[k] = 0;
                     sumprod[k] = 0;
                 }
+                cv.notify_one();
             }
     }
     

@@ -154,23 +154,23 @@ vector<vector<int>> matmult(vector<vector<int>> array1, vector<vector<int>> arra
     //output vector
     vector<vector<int>> multarray;
     //inner summation tool, sums all columns at once. 
-    vector<int> sumprod(cols2);
+    vector<int> sumprodo(cols2);
     
     //outmost loop for number of  vectors, middle loop for each value in a vector, and 
     //innermost loop is for  multiplying and summing each value in input matrices.
     for (int j = 0; j < rows1; j++) {
         for (int k = 0; k < cols2; k++)
         {
-            sumprod[k] = 0;
+            sumprodo[k] = 0;
         }
         for (int i = 0; i < cols1; i++)
         {
             for (int ind = 0; ind < cols2; ind++)
             {
-                sumprod[ind] += (array1[j][i] * array2[i][ind]);
+                sumprodo[ind] += (array1[j][i] * array2[i][ind]);
             }
         }
-        multarray.push_back(sumprod);
+        multarray.push_back(sumprodo);
         
     }
     return multarray;
@@ -182,8 +182,8 @@ vector<vector<int>> matmult(vector<vector<int>> array1, vector<vector<int>> arra
 void threadLoop( int arr1row, int cols2, int array1RsubI, 
     vector<int> array2SubI, int i, vector<int>& tsumprod)
 {
-    std::unique_lock<mutex> ul(m);
-    cv.wait(ul,  [i] { return (i%2) ? true : false; });
+    // std::unique_lock<mutex> ul(m);
+    // cv.wait(ul,  [i] { return (i%2) ? true : false; });
     for (int ind = 0; ind < cols2; ind++)
     {
         tsumprod[ind] = (array1RsubI * array2SubI[ind]);
@@ -195,7 +195,7 @@ void threadLoop( int arr1row, int cols2, int array1RsubI,
 vector<vector<int>> threadMatMult(vector<vector<int>> array1, vector<vector<int>> array2, int rows1, int cols1, int rows2, int cols2) 
 {
 
-
+    
     if (cols1 != rows2)
     {
         std::cout << "the dimensions don't match \n";
@@ -203,7 +203,7 @@ vector<vector<int>> threadMatMult(vector<vector<int>> array1, vector<vector<int>
     }
 
     //output vector
-    vector<vector<int>> multarray(rows1, vector<int> (cols2, 0));
+    vector<vector<int>> tmultarray(rows1, vector<int> (cols2, 0));
     
     //const auto threadCount = thread::hardware_concurrency();
 
@@ -213,40 +213,33 @@ vector<vector<int>> threadMatMult(vector<vector<int>> array1, vector<vector<int>
         vector<int> threadsumprod(cols2);
         for (int i = 0; i < cols1; i++)
             {
-                
-                
-                thread t(threadLoop, arr1row, cols2, array1[arr1row][i], array2[i], i, std::ref(threadsumprod));
-
-                // if (i%2)
-                // {
-                //     t = thread(threadLoop, arr1row, cols2, array1[arr1row][i], array2[i], i, std::ref(threadsumprod));
-                // } 
-                // else
-                // {
-                //     for (int ind = 0; ind < cols2; ind++)
-                //     {
-                //         sumprod[ind] += (array1[arr1row][i] * array2[i][ind]);
-                //     }
-                // }
-                for (int ind = 0; ind < cols2; ind++)
+               
+                thread t;
+                if (i%2)
                 {
-                    sumprod[ind] += (array1[arr1row][i] * array2[i][ind]);
+                    t = std::thread(threadLoop, arr1row, cols2, array1[arr1row][i], array2[i], i, std::ref(threadsumprod));
+                } 
+                else
+                {
+                    for (int ind = 0; ind < cols2; ind++)
+                    {
+                        sumprod[ind] += (array1[arr1row][i] * array2[i][ind]);
+                    }
                 }
-                t.detach();
-                // if (t.joinable())
-                // {
-                //     t.join();
-                // };
+                
+                
+                if (t.joinable())
+                {
+                    t.join();
+                };
                 for (int k = 0; k < cols2; k++)
                 {
-                    multarray[arr1row][k] += (sumprod[k] + threadsumprod[k]);
+                    tmultarray[arr1row][k] += (sumprod[k] + threadsumprod[k]);
                     threadsumprod[k] = 0;
                     sumprod[k] = 0;
-                }
-                cv.notify_one();
-            }
+                }   
+            }  
     }
-    
 
-    return multarray;
+    return tmultarray;
 }

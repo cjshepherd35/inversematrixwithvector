@@ -125,10 +125,10 @@ vector<double> inverse(vector<int>& arr, int rows, int cols) {
     //double *doubleptr = nullptr;
     int det = determinant(arr, rows, cols);
         
-    // if (det == 0) {
-    //     cout << "determinant zero so won't have an inverse" << endl;
-        
-    // }
+    if (det == 0) {
+        cout << "determinant zero so won't have an inverse" << endl;
+        exit(1);
+    }
     vector<int> cofs = cofactors(arr, rows, cols);
     negative(cofs, rows, cols);
     flip(cofs, rows, cols);
@@ -176,14 +176,12 @@ vector<vector<int>> matmult(vector<vector<int>> array1, vector<vector<int>> arra
     return multarray;
 }
 
-//needs to figure out mutex locks...
-////////
-//////
+// thread function inside threadmatmultiply function. 
+
 void threadLoop( int arr1row, int cols2, int array1RsubI, 
     vector<int> array2SubI, int i, vector<int>& tsumprod)
 {
-    // std::unique_lock<mutex> ul(m);
-    // cv.wait(ul,  [i] { return (i%2) ? true : false; });
+   
     for (int ind = 0; ind < cols2; ind++)
     {
         tsumprod[ind] = (array1RsubI * array2SubI[ind]);

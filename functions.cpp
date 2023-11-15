@@ -3,6 +3,7 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+#include <future>
 
 using namespace std;
 
@@ -184,6 +185,7 @@ void threadLoop( int arr1row, int cols2, int array1RsubI,
    
     for (int ind = 0; ind < cols2; ind++)
     {
+       
         tsumprod[ind] = (array1RsubI * array2SubI[ind]);
     }
 }
@@ -212,10 +214,14 @@ vector<vector<int>> threadMatMult(vector<vector<int>> array1, vector<vector<int>
         for (int i = 0; i < cols1; i++)
             {
                
-                thread t;
+                //thread t;
+                future<void> fut;
                 if (i%2)
                 {
-                    t = std::thread(threadLoop, arr1row, cols2, array1[arr1row][i], array2[i], i, std::ref(threadsumprod));
+                    
+                    //t = std::thread(threadLoop, arr1row, cols2, array1[arr1row][i], array2[i], i, std::ref(threadsumprod));
+                    fut = async(&threadLoop, arr1row, cols2, array1[arr1row][i], array2[i], i, std::ref(threadsumprod));
+                    
                 } 
                 else
                 {
@@ -224,12 +230,17 @@ vector<vector<int>> threadMatMult(vector<vector<int>> array1, vector<vector<int>
                         sumprod[ind] += (array1[arr1row][i] * array2[i][ind]);
                     }
                 }
-                
-                
-                if (t.joinable())
+                if (fut.valid())
                 {
-                    t.join();
-                };
+                    fut.get();
+                }
+                
+                
+                // if (t.joinable())
+                // {
+                //     t.join();
+                // };
+                
                 for (int k = 0; k < cols2; k++)
                 {
                     tmultarray[arr1row][k] += (sumprod[k] + threadsumprod[k]);
